@@ -14,23 +14,16 @@ def create_app(test_config=None):
     setup_db(app)
     CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-    """
-    @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
-    """
     @app.after_request
     def after_request(response):
         """Set up CORS"""
         response.headers.add(
-            "Access-Control-Headers", "Content-Type, Authorization,true"
+            "Access-Control-Allow-Headers", "Content-Type, Authorization,true"
         )
         response.headers.add(
-            "Access-Control-Allow_Methods", "GET,PUT,POST,DELETE,OPTIONS,PATCH"
+            "Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS,PATCH"
         )
         return response
-
-    """
-    @TODO: Use the after_request decorator to set Access-Control-Allow
-    """
 
     """
     @TODO:
