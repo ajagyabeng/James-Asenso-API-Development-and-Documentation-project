@@ -1,4 +1,5 @@
 import os
+from unicodedata import category
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
@@ -25,12 +26,17 @@ def create_app(test_config=None):
         )
         return response
 
-    """
-    @TODO:
-    Create an endpoint to handle GET requests
-    for all available categories.
-    """
-
+    @app.route('/categories')
+    def get_categories():
+        """fetches all the categories available"""
+        response = Category.query.all()
+        categories = [category.format() for category in response]
+        
+        return jsonify({
+            'success': True,
+            'categories': categories, 
+            'total_categories': len(Category.query.all())
+        })
 
     """
     @TODO:
@@ -44,6 +50,7 @@ def create_app(test_config=None):
     ten questions per page and pagination at the bottom of the screen for three pages.
     Clicking on the page numbers should update the questions.
     """
+
 
     """
     @TODO:
