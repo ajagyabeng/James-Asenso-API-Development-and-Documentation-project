@@ -40,10 +40,11 @@ def create_app(test_config=None):
         """fetches all the categories available"""
         selection = Category.query.all()
         categories = [category.format() for category in selection]
+        categories_dict = {category['id']: category['type'] for category in categories}
         
         return jsonify({
             'success': True,
-            'categories': categories, 
+            'categories': categories_dict, 
             'total_categories': len(Category.query.all())
         })
 
@@ -156,12 +157,6 @@ def create_app(test_config=None):
     TEST: In the "Play" tab, after a user selects "All" or a category,
     one question at a time is displayed, the user is allowed to answer
     and shown whether they were correct or not.
-    """
-
-    """
-    @TODO:
-    Create error handlers for all expected errors
-    including 404 and 422.
     """
 
     # ----------ERROR HANDLERS-----------------
