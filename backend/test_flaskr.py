@@ -108,6 +108,15 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
         self.assertEqual(len(data['questions']), 1)
         self.assertTrue(data['total_questions'])
+    
+    def test_search_question_without_result(self):
+        res = self.client().post('/questions', json={"query": "asenso"})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(len(data['questions']), 0)
+        self.assertTrue(data['total_questions'])
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
