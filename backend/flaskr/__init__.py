@@ -177,6 +177,15 @@ def create_app(test_config=None):
 
     # ----------ERROR HANDLERS-----------------
 
+    @app.errorhandler(400)
+    def invalid(error):
+        """handles 400 errors"""
+        return jsonify({
+            "success": False, 
+            "error": 400,
+            "message": "bad request"
+            }), 400
+
     @app.errorhandler(404)
     def not_found(error):
         """handles 404 errors"""
@@ -186,6 +195,15 @@ def create_app(test_config=None):
             "message": "resource not found"
             }), 404
 
+    @app.errorhandler(405)
+    def not_allowed(error):
+        """handles 405 errors"""
+        return jsonify({
+            "success": False, 
+            "error": 405,
+            "message": "method not allowed"
+            }), 405
+
     @app.errorhandler(422)
     def unprocessable(error):
         """handles 422 errors"""
@@ -194,15 +212,6 @@ def create_app(test_config=None):
             "error": 422,
             "message": "Unprocessable"
             }), 422
-
-    @app.errorhandler(400)
-    def invalid(error):
-        """handles 400 errors"""
-        return jsonify({
-            "success": False, 
-            "error": 400,
-            "message": "bad request"
-            }), 400
 
     return app
 
