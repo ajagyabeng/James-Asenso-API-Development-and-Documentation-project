@@ -118,6 +118,25 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(len(data['questions']), 0)
         self.assertTrue(data['total_questions'])
 
+    # --------QUESTION BASED ON CATEGORY--------------
+    def test_get_questions_based_on_category(self):
+        res = self.client().get('/categories/4/questions')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['currentCategory'], "History")
+        self.assertTrue(data['questions'])
+        self.assertTrue(data['totalQuestions']) 
+
+    def test_422_if_request_unprocessable(self):
+        res = self.client().get('/categories/100/questions')
+        data = json.loads(res.data)
+        
+        self.assertEqual(res.status_code, 422)
+        self.assertEqual(data['message'], 'Unprocessable')
+        self.assertEqual(data['success'], False)
+
+
 # Make the tests conveniently executable
 if __name__ == "__main__":
     unittest.main()
