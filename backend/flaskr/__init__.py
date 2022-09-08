@@ -38,8 +38,8 @@ def create_app(test_config=None):
     @app.route('/categories')
     def get_categories():
         """fetches all the categories available"""
-        response = Category.query.all()
-        categories = [category.format() for category in response]
+        selection = Category.query.all()
+        categories = [category.format() for category in selection]
         
         return jsonify({
             'success': True,
@@ -50,8 +50,8 @@ def create_app(test_config=None):
     @app.route('/questions')
     def get_paginated_questions():
         current_category = request.args.get('category', 1, type=int)
-        response = Question.query.all()
-        current_questions = paginate_questions(request, response)
+        selection = Question.query.all()
+        current_questions = paginate_questions(request, selection)
         categories = [category.format() for category in Category.query.all()]
 
         if len(current_questions) == 0:
@@ -74,19 +74,20 @@ def create_app(test_config=None):
     """
     @app.route('/questions/<int:question_id>', methods=['DELETE'])
     def delete_question(question_id):
+        """Deletes a question with a provided id. Returns a json object"""
         try:
             question = Question.query.filter(Question.id == question_id).first()
             if question is None:
                 abort(404)
             question.delete()
-            response = Question.query.order_by(Question.id).all()
-            current_questions = paginate_questions(request, response)
+            selection = Question.query.order_by(Question.id).all()
+            current_questions = paginate_questions(request, selection)
 
             return jsonify({
                 'success': True,
                 'deleted': question_id,
                 'questions': current_questions,
-                'total_questions': len(response)
+                'total_questions': len(selection)
             })
         except LookupError:
             abort(422)
@@ -102,6 +103,39 @@ def create_app(test_config=None):
     the form will clear and the question will appear at the end of the last page
     of the questions list in the "List" tab.
     """
+    @app.route('/questions', methods=['POST'])
+    def add_question():
+        """adds a new question to the database"""
+        body = request.get_json()
+
+        # get hold of values passed into the request individually
+        new_question = body.get("question", None)
+        answer = body.get("answer", None)
+        difficulty = body.get("difficulty", None)
+        category = body.get("category", None)
+
+        try:
+            # create new question and insert it into database
+            question = Question(
+                question=new_question,
+                answer=answer,
+                difficulty=difficulty,
+                category=category
+            )
+            question.insert()
+
+            # select and return questions
+            selection = Question.query.order_by(Question.id).all()
+            current_questions = paginate_questions(request, selection)
+
+            return jsonify({
+                "success": True,
+                "created": question.id,
+                "questions": current_questions,
+                "total_questions": len(Question.query.all())
+            })
+        except:
+            abort(422)
 
     """
     @TODO:
@@ -160,6 +194,15 @@ def create_app(test_config=None):
             "error": 422,
             "message": "Unprocessable"
             }), 422
+
+    @app.errorhandler(400)
+    def invalid(error):
+        """handles 400 errors"""
+        return jsonify({
+            "success": False, 
+            "error": 400,
+            "message": "bad request"
+            }), 400
 
     return app
 
