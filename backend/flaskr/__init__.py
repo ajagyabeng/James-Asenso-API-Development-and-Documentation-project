@@ -21,8 +21,15 @@ def paginate_questions(request, selection):
 def categories_dict():
     """querries databse and return category data as a dictionary"""
     categories = [category.format() for category in Category.query.all()]
-    categories_dict = {category['id']: category['type'] for category in categories}
-    return categories_dict
+    formatted_categories = {category['id']: category['type'] for category in categories}
+    return formatted_categories
+
+def choose_random_quiz_question(selection, previous_question):
+    """returns a random question with it's id not in the previously selected questions"""
+    formatted_questions = [question.format() for question in selection]
+    quiz_questions = [question for question in formatted_questions if question['id'] not in previous_question]
+    current_question = random.choice(quiz_questions)
+    return current_question
 
 def create_app(test_config=None):
     # create and configure the app
@@ -54,7 +61,6 @@ def create_app(test_config=None):
 
     @app.route('/questions')
     def get_paginated_questions():
-        current_category = request.args.get('category', 1, type=int) # TODO: FIX THIS
         selection = Question.query.all()
         current_questions = paginate_questions(request, selection)
         categories = categories_dict()
@@ -67,7 +73,7 @@ def create_app(test_config=None):
             'questions': current_questions,
             'total_questions': len(Question.query.all()),
             'categories': categories,
-            'current_category': current_category
+            'current_category': categories[current_questions[1]['category']]
         })
 
     @app.route('/questions/<int:question_id>', methods=['DELETE'])
@@ -100,17 +106,21 @@ def create_app(test_config=None):
         answer = body.get("answer", None)
         difficulty = body.get("difficulty", None)
         category = body.get("category", None)
-        query = body.get("query", None)
+        query = body.get("searchTerm", None)
 
         try:
             if query:
                 selection = Question.query.filter(Question.question.ilike(f"%{query}%")).all()
                 current_questions = paginate_questions(request, selection)
+                current_questions_category_id = [item['category'] for item in current_questions]
+
+                current_categories = [categories_dict()[item] for item in current_questions_category_id if item in categories_dict()]
 
                 return jsonify({
                     'success': True,
                     'questions': current_questions,
-                    'total_questions': len(Question.query.all())
+                    'total_questions': len(Question.query.all()),
+                    'currentCategory': current_categories
                 })
             else:
                 # create new question and insert it into database
@@ -135,16 +145,9 @@ def create_app(test_config=None):
         except:
             abort(422)
 
-    """
-    @TODO:
-    Create a GET endpoint to get questions based on category.
-
-    TEST: In the "List" tab / main screen, clicking on one of the
-    categories in the left column will cause only questions of that
-    category to be shown.
-    """
     @app.route('/categories/<int:category_id>/questions', methods=['GET'])
     def get_questions(category_id):
+        """returns questions based on categories"""
         try:
             selection = Question.query.filter(Question.category == category_id).all()
             if selection is None:
@@ -174,6 +177,28 @@ def create_app(test_config=None):
     one question at a time is displayed, the user is allowed to answer
     and shown whether they were correct or not.
     """
+    @app.route('/quizzes', methods=['POST'])
+    def get_quiz_question():
+        body = request.get_json()
+
+        previous_question = body.get('previous_questions', None)
+        quiz_category = body.get('quiz_category', None)
+        quiz_category_id = int(quiz_category['id'])
+
+        try:
+            if quiz_category_id == 0:
+                selection = Question.query.all()
+                current_question = choose_random_quiz_question(selection, previous_question)
+            else:
+                selection = Question.query.filter(Question.category == quiz_category_id).all()
+                current_question = choose_random_quiz_question(selection, previous_question)
+
+
+            return jsonify({
+                'question': current_question,
+            })
+        except:
+            abort(500)
 
     # ----------ERROR HANDLERS-----------------
 
@@ -212,6 +237,15 @@ def create_app(test_config=None):
             "error": 422,
             "message": "Unprocessable"
             }), 422
+
+    @app.errorhandler(500)
+    def unprocessable(error):
+        """handles 500 errors"""
+        return jsonify({
+            "success": False, 
+            "error": 500,
+            "message": "Internal Server Error: run out of questions"
+            }), 500
 
     return app
 
