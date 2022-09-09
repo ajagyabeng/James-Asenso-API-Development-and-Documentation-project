@@ -54,21 +54,21 @@ class TriviaTestCase(unittest.TestCase):
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 404)
-        self.assertEqual(data['message'], 'resource not found')
+        self.assertEqual(data['message'], 'Resource Not Found')
         self.assertEqual(data['success'], False)
 
     # -------------DELETE QUESTION--------------
-    # def test_delete_questions(self):
-    #     res = self.client().delete('/questions/10')
-    #     data = json.loads(res.data)
-    #     question = Question.query.filter(Question.id == 10).first()
+    def test_delete_questions(self):
+        res = self.client().delete('/questions/23')
+        data = json.loads(res.data)
+        question = Question.query.filter(Question.id == 23).first()
 
-    #     self.assertEqual(res.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-    #     self.assertEqual(data['deleted'], 10)
-    #     self.assertTrue(data['total_questions'])
-    #     self.assertTrue(len(data['questions']))
-    #     self.assertEqual(question, None)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['deleted'], 23)
+        self.assertTrue(data['total_questions'])
+        self.assertTrue(len(data['questions']))
+        self.assertEqual(question, None)
 
     # -----ABOVE COMMENTED OUT ON PURPOSE----------
 
@@ -77,7 +77,7 @@ class TriviaTestCase(unittest.TestCase):
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 404)
-        self.assertEqual(data['message'], 'resource not found')
+        self.assertEqual(data['message'], 'Resource Not Found')
         self.assertEqual(data['success'], False)
 
     # ------------ADD NEW QUESTION-------------
@@ -97,7 +97,7 @@ class TriviaTestCase(unittest.TestCase):
 
         self.assertEqual(res.status_code, 405)
         self.assertEqual(data['success'], False)
-        self.assertEqual(data['message'], 'method not allowed')
+        self.assertEqual(data['message'], 'Method Not Allowed')
 
     # ----------SEARCH FOR QUESTION-------------
     def test_search_question_with_result(self):
@@ -153,7 +153,7 @@ class TriviaTestCase(unittest.TestCase):
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 500)
-        self.assertEqual(data['message'], 'Internal Server Error: run out of questions')
+        self.assertEqual(data['message'], 'Internal Server Error')
         self.assertEqual(data['success'], False)
 
 
