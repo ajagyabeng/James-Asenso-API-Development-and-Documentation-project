@@ -101,7 +101,7 @@ class TriviaTestCase(unittest.TestCase):
 
     # ----------SEARCH FOR QUESTION-------------
     def test_search_question_with_result(self):
-        res = self.client().post('/questions', json={"query": "Invent"})
+        res = self.client().post('/questions', json={"searchTerm": "Invent"})
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
@@ -110,7 +110,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data['total_questions'])
     
     def test_search_question_without_result(self):
-        res = self.client().post('/questions', json={"query": "asenso"})
+        res = self.client().post('/questions', json={"searchTerm": "asenso"})
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
@@ -134,6 +134,26 @@ class TriviaTestCase(unittest.TestCase):
         
         self.assertEqual(res.status_code, 422)
         self.assertEqual(data['message'], 'Unprocessable')
+        self.assertEqual(data['success'], False)
+
+        
+    # --------------GET QUIZ QUESTIONS-------------
+    def test_get_quiz_question(self):
+        trivia_request = {'quiz_category': {'id': '3'}, 'previous_questions':[]
+        }
+        res = self.client().post('/quizzes', json=trivia_request)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data['question'])
+
+    def test_500_if_request_parameter_not_present(self):
+        trivia_request = {'quiz_category': {'id': '3'}}
+        res = self.client().post('/quizzes', json=trivia_request)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 500)
+        self.assertEqual(data['message'], 'Internal Server Error: run out of questions')
         self.assertEqual(data['success'], False)
 
 
