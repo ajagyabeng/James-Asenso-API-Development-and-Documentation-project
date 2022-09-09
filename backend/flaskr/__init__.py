@@ -103,11 +103,11 @@ def create_app(test_config=None):
         body = request.get_json()
 
         # get hold of values passed into the request individually
-        new_question = body.get("question")
-        answer = body.get("answer")
-        difficulty = body.get("difficulty")
-        category = body.get("category")
-        query = body.get("searchTerm")
+        new_question = body.get("question", None)
+        answer = body.get("answer", None)
+        difficulty = body.get("difficulty", None)
+        category = body.get("category", None)
+        query = body.get("searchTerm", None)
 
         try:
             if query:
