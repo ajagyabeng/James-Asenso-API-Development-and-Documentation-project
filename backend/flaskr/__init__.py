@@ -61,6 +61,7 @@ def create_app(test_config=None):
 
     @app.route('/questions')
     def get_paginated_questions():
+        """fetches questions and paginate it to a specified number of questions"""
         selection = Question.query.all()
         current_questions = paginate_questions(request, selection)
         categories = categories_dict()
@@ -73,7 +74,7 @@ def create_app(test_config=None):
             'questions': current_questions,
             'total_questions': len(Question.query.all()),
             'categories': categories,
-            'current_category': categories[current_questions[1]['category']]
+            'current_category': 'History'
         })
 
     @app.route('/questions/<int:question_id>', methods=['DELETE'])
@@ -102,11 +103,11 @@ def create_app(test_config=None):
         body = request.get_json()
 
         # get hold of values passed into the request individually
-        new_question = body.get("question", None)
-        answer = body.get("answer", None)
-        difficulty = body.get("difficulty", None)
-        category = body.get("category", None)
-        query = body.get("searchTerm", None)
+        new_question = body.get("question")
+        answer = body.get("answer")
+        difficulty = body.get("difficulty")
+        category = body.get("category")
+        query = body.get("searchTerm")
 
         try:
             if query:
